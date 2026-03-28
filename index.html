@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Asistente Financiero Pro</title>
+    <style>
+        :root { --primary: #1a73e8; --secondary: #34a853; --danger: #d93025; --gray: #5f6368; --light: #f1f3f4; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f8f9fa; padding: 20px; color: #202124; }
+        .container { max-width: 850px; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin: auto; }
+        
+        /* Sistema de Pestañas */
+        .tabs { display: flex; border-bottom: 2px solid var(--light); margin-bottom: 25px; }
+        .tab-btn { padding: 12px 24px; cursor: pointer; border: none; background: none; font-weight: bold; color: var(--gray); transition: 0.3s; border-bottom: 3px solid transparent; }
+        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        h1 { text-align: center; color: var(--primary); margin-bottom: 5px; }
+        h2 { border-bottom: 2px solid #eee; padding-bottom: 8px; font-size: 1.1em; color: var(--primary); }
+        
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .row { display: flex; gap: 10px; margin-bottom: 12px; align-items: center; }
+        input { padding: 10px; border: 1px solid #dadce0; border-radius: 6px; outline: none; }
+        input[type="text"], input[type="number"] { flex: 1; }
+
+        /* Estilos Calculadora Pasajes */
+        .calc-box { background: #fdfdfd; border: 1px solid #eee; padding: 20px; border-radius: 10px; }
+        .info-label { font-size: 0.9em; color: var(--gray); margin-bottom: 5px; display: block; }
+
+        .resumen-card { background: var(--light); padding: 20px; border-radius: 10px; margin-top: 30px; }
+        .resumen-item { display: flex; justify-content: space-between; margin: 10px 0; font-size: 1.1em; }
+        .total-destacado { font-size: 1.5em; font-weight: bold; border-top: 2px solid #dadce0; padding-top: 15px; margin-top: 15px; }
+
+        #analisis-texto { background: #fff; border-left: 5px solid var(--primary); padding: 15px; margin-top: 20px; font-style: italic; line-height: 1.6; }
+
+        .btn-add { background: #e8f0fe; color: var(--primary); border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-download { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; width: 100%; margin-top: 20px; font-weight: bold; }
+
+        @media print { .tabs, .btn-add, .btn-download { display: none !important; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Control Financiero Personal</h1>
+    <p style="text-align:center; color: var(--gray); margin-bottom: 20px;" id="current-date"></p>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="openTab(event, 'reporte')">Reporte General</button>
+        <button class="tab-btn" onclick="openTab(event, 'calculadora')">Pasajes y Nómina</button>
+    </div>
+
+    <div id="reporte" class="tab-content active">
+        <div class="grid">
+            <div class="col">
+                <h2>Ingresos Mensuales</h2>
+                <div class="row">
+                    <label style="width: 100px;">Salario:</label>
+                    <input type="number" id="salario" value="0" oninput="calcularTodo()">
+                </div>
+                <div class="row">
+                    <label style="width: 100px;">Extras:</label>
+                    <input type="number" id="otrosIngresos" value="0" oninput="calcularTodo()">
+                </div>
+            </div>
+
+            <div class="col">
+                <h2>Gastos Variables</h2>
+                <div id="lista-gastos">
+                    <div class="row">
+                        <input type="text" value="Arriendo">
+                        <input type="number" class="gasto-valor" value="0" oninput="calcularTodo()">
+                    </div>
+                </div>
+                <button class="btn-add" onclick="agregarFila()">+ Añadir Concepto</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="calculadora" class="tab-content">
+        <div class="grid">
+            <div class="col calc-box">
+                <h2>🚌 Cálculo de Pasajes</h2>
+                <span class="info-label">Valor del pasaje (un trayecto):</span>
+                <input type="number" id="valorPasaje" value="2950" oninput="calcularTodo()" style="width: 90%; margin-bottom: 15px;">
+                
+                <span class="info-label">Pasajes al día (ej: 2 o 4):</span>
+                <input type="number" id="cantidadPasajes" value="2" oninput="calcularTodo()" style="width: 90%; margin-bottom: 15px;">
+                
+                <span class="info-label">Días laborales al mes:</span>
+                <input type="number" id="diasLaborales" value="20" oninput="calcularTodo()" style="width: 90%;">
+                
+                <p style="margin-top: 15px; font-weight: bold; color: var(--primary);">Total Pasajes Mes: <span id="totalPasajesText">$0</span></p>
+            </div>
+
+            <div class="col calc-box">
+                <h2>💰 Descuentos de Nómina</h2>
+                <span class="info-label">Ahorro automático (Nómina):</span>
+                <input type="number" id="ahorroNomina" value="0" oninput="calcularTodo()" style="width: 90%; margin-bottom: 15px;">
+                
+                <span class="info-label">Otros descuentos (Deudas nómina):</span>
+                <input type="number" id="descuentosNomina" value="0" oninput="calcularTodo()" style="width: 90%;">
+                
+                <p style="margin-top: 15px; color: var(--gray); font-size: 0.85em;">
+                    * Estos valores se restan de tu ingreso base para un análisis más real de tu dinero disponible.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="resumen-card">
+        <div class="resumen-item"><span>Ingresos Totales:</span> <span id="res-ingresos">$0</span></div>
+        <div class="resumen-item"><span>Ahorro en Nómina (Protegido):</span> <span id="res-ahorro" style="color: var(--secondary); font-weight: bold;">$0</span></div>
+        <div class="resumen-item"><span>Total Gastos + Pasajes:</span> <span id="res-gastos">$0</span></div>
+        <div class="resumen-item total-destacado"><span>Saldo Disponible:</span> <span id="res-saldo">$0</span></div>
+        
+        <div id="analisis-contenedor">
+            <h3>Análisis de tu IA:</h3>
+            <div id="analisis-texto">Ingresa tus datos para conversar...</div>
+        </div>
+    </div>
+
+    <button class="btn-download" onclick="window.print()">Descargar Reporte Completo (PDF)</button>
+</div>
+
+<script>
+    document.getElementById('current-date').innerText = new Date().toLocaleDateString('es-CO', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+    function openTab(evt, tabName) {
+        let i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tab-content");
+        for (i = 0; i < tabcontent.length; i++) tabcontent[i].style.display = "none";
+        tablinks = document.getElementsByClassName("tab-btn");
+        for (i = 0; i < tablinks.length; i++) tablinks[i].className = tablinks[i].className.replace(" active", "");
+        document.getElementById(tabName).style.display = "block";
+        evt.currentTarget.className += " active";
+    }
+
+    function agregarFila() {
+        const div = document.createElement('div');
+        div.className = 'row';
+        div.innerHTML = `<input type="text" placeholder="Concepto"><input type="number" class="gasto-valor" value="0" oninput="calcularTodo()">`;
+        document.getElementById('lista-gastos').appendChild(div);
+    }
+
+    function calcularTodo() {
+        const f = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
+        
+        // 1. Ingresos
+        const ing1 = parseFloat(document.getElementById('salario').value) || 0;
+        const ing2 = parseFloat(document.getElementById('otrosIngresos').value) || 0;
+        const totalIng = ing1 + ing2;
+
+        // 2. Pasajes
+        const valPasaje = parseFloat(document.getElementById('valorPasaje').value) || 0;
+        const cantPasaje = parseFloat(document.getElementById('cantidadPasajes').value) || 0;
+        const diasLab = parseFloat(document.getElementById('diasLaborales').value) || 0;
+        const totalPasajes = valPasaje * cantPasaje * diasLab;
+        document.getElementById('totalPasajesText').innerText = f.format(totalPasajes);
+
+        // 3. Nómina
+        const ahorroNom = parseFloat(document.getElementById('ahorroNomina').value) || 0;
+        const descNom = parseFloat(document.getElementById('descuentosNomina').value) || 0;
+
+        // 4. Gastos Variables
+        let totalGasVar = 0;
+        document.querySelectorAll('.gasto-valor').forEach(i => totalGasVar += parseFloat(i.value) || 0);
+
+        // TOTALES
+        const totalGastosReal = totalGasVar + totalPasajes + descNom;
+        const saldo = totalIng - totalGastosReal - ahorroNom;
+
+        // UI
+        document.getElementById('res-ingresos').innerText = f.format(totalIng);
+        document.getElementById('res-ahorro').innerText = f.format(ahorroNom);
+        document.getElementById('res-gastos').innerText = f.format(totalGastosReal);
+        const elSaldo = document.getElementById('res-saldo');
+        elSaldo.innerText = f.format(saldo);
+        elSaldo.style.color = saldo < 0 ? "var(--danger)" : "var(--secondary)";
+
+        generarAnalisisIA(totalIng, totalGastosReal, ahorroNom, saldo);
+    }
+
+    function generarAnalisisIA(ing, gas, aho, sal) {
+        const texto = document.getElementById('analisis-texto');
+        if (ing === 0) return;
+
+        const pctAhorro = (aho / ing) * 100;
+        let msg = "";
+
+        if (sal < 0) {
+            msg = "🚨 **Alerta Crítica:** Tus gastos (incluyendo pasajes y descuentos) superan tus ingresos. Estás en déficit por " + Math.abs(sal) + ". Revisa si puedes reducir días de oficina o gastos variables.";
+        } else {
+            msg = "Hola. He procesado tu información. ";
+            if (aho > 0) {
+                msg += "Me parece excelente que ya tengas un **ahorro de nómina del " + pctAhorro.toFixed(1) + "%**. Ese dinero es 'invisible' pero te está construyendo futuro. ";
+            } else {
+                msg += "Veo que no tienes ahorros por nómina. Es una gran herramienta para ahorrar antes de ver el dinero. ";
+            }
+
+            if (sal > (ing * 0.15)) {
+                msg += "\n\n✅ Tienes un disponible sano del " + ((sal/ing)*100).toFixed(1) + "%. Es un buen momento para no gastarlo todo y quizás aumentar ese ahorro de nómina.";
+            } else {
+                msg += "\n\n⚠️ Estás operando con un margen estrecho. Después de pasajes y deudas, te queda muy poco disponible.";
+            }
+        }
+        texto.innerText = msg;
+    }
+</script>
+
+</body>
+</html>
