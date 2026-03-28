@@ -5,37 +5,198 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Asistente Financiero Pro</title>
     <style>
-        :root { --primary: #1a73e8; --secondary: #34a853; --danger: #d93025; --gray: #5f6368; --light: #f1f3f4; }
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f8f9fa; padding: 20px; color: #202124; }
-        .container { max-width: 850px; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin: auto; }
+        :root { 
+            --primary: #1a73e8; 
+            --secondary: #34a853; 
+            --danger: #d93025; 
+            --gray: #5f6368; 
+            --light: #f1f3f4; 
+        }
         
-        /* Sistema de Pestañas */
-        .tabs { display: flex; border-bottom: 2px solid var(--light); margin-bottom: 25px; }
-        .tab-btn { padding: 12px 24px; cursor: pointer; border: none; background: none; font-weight: bold; color: var(--gray); transition: 0.3s; border-bottom: 3px solid transparent; }
-        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background-color: #f8f9fa; 
+            padding: 10px; /* Reducimos padding en móvil */
+            color: #202124; 
+            margin: 0;
+        }
+
+        .container { 
+            max-width: 850px; 
+            background: white; 
+            padding: 20px; /* Menos padding en contenedor para móvil */
+            border-radius: 15px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); /* Sombra más suave */
+            margin: 10px auto; 
+        }
+        
+        h1 { 
+            text-align: center; 
+            color: var(--primary); 
+            margin-bottom: 5px; 
+            font-size: 1.5rem; /* Título un poco más pequeño en móvil */
+        }
+        
+        p#current-date {
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        /* Sistema de Pestañas (Adaptado para Touch) */
+        .tabs { 
+            display: flex; 
+            border-bottom: 2px solid var(--light); 
+            margin-bottom: 20px; 
+        }
+        .tab-btn { 
+            flex: 1; /* Pestañas ocupan ancho igual */
+            padding: 15px 10px; /* Más espacio para tocar */
+            cursor: pointer; 
+            border: none; 
+            background: none; 
+            font-weight: bold; 
+            color: var(--gray); 
+            transition: 0.3s; 
+            border-bottom: 3px solid transparent; 
+            font-size: 0.9rem;
+        }
+        .tab-btn.active { 
+            color: var(--primary); 
+            border-bottom-color: var(--primary); 
+        }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        h1 { text-align: center; color: var(--primary); margin-bottom: 5px; }
-        h2 { border-bottom: 2px solid #eee; padding-bottom: 8px; font-size: 1.1em; color: var(--primary); }
+        h2 { 
+            border-bottom: 2px solid #eee; 
+            padding-bottom: 8px; 
+            font-size: 1rem; 
+            color: var(--primary); 
+            margin-top: 0;
+        }
         
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
-        .row { display: flex; gap: 10px; margin-bottom: 12px; align-items: center; }
-        input { padding: 10px; border: 1px solid #dadce0; border-radius: 6px; outline: none; }
-        input[type="text"], input[type="number"] { flex: 1; }
+        /* GRID RESPONSIVO: 1 columna en móvil, 2 en escritorio */
+        .grid { 
+            display: grid; 
+            grid-template-columns: 1fr; /* Por defecto, una columna */
+            gap: 20px; 
+        }
+
+        .row { 
+            display: flex; 
+            gap: 10px; 
+            margin-bottom: 15px; 
+            align-items: center; 
+            flex-wrap: wrap; /* Permite que las etiquetas se pongan arriba si no caben */
+        }
+
+        /* Inputs más grandes para móvil (Touch-friendly) */
+        input { 
+            padding: 12px; 
+            border: 1px solid #dadce0; 
+            border-radius: 8px; 
+            outline: none; 
+            font-size: 1rem; /* Previene zoom automático en iOS */
+            width: 100%; /* Ocupan todo el ancho disponible */
+            box-sizing: border-box;
+        }
+        
+        /* Ajuste específico para filas con nombre y valor */
+        .gasto-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr; /* Nombre 2 partes, Valor 1 parte */
+            gap: 10px;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .gasto-row input {
+            width: 100%;
+        }
 
         /* Estilos Calculadora Pasajes */
-        .calc-box { background: #fdfdfd; border: 1px solid #eee; padding: 20px; border-radius: 10px; }
-        .info-label { font-size: 0.9em; color: var(--gray); margin-bottom: 5px; display: block; }
+        .calc-box { 
+            background: #fdfdfd; 
+            border: 1px solid #eee; 
+            padding: 15px; 
+            border-radius: 10px; 
+        }
+        .info-label { 
+            font-size: 0.85em; 
+            color: var(--gray); 
+            margin-bottom: 5px; 
+            display: block; 
+            font-weight: bold;
+        }
 
-        .resumen-card { background: var(--light); padding: 20px; border-radius: 10px; margin-top: 30px; }
-        .resumen-item { display: flex; justify-content: space-between; margin: 10px 0; font-size: 1.1em; }
-        .total-destacado { font-size: 1.5em; font-weight: bold; border-top: 2px solid #dadce0; padding-top: 15px; margin-top: 15px; }
+        /* Resumen Card (Optimizado móvil) */
+        .resumen-card { 
+            background: var(--light); 
+            padding: 15px; 
+            border-radius: 10px; 
+            margin-top: 25px; 
+        }
+        .resumen-item { 
+            display: flex; 
+            justify-content: space-between; 
+            margin: 8px 0; 
+            font-size: 1rem; 
+        }
+        .total-destacado { 
+            font-size: 1.3rem; 
+            font-weight: bold; 
+            border-top: 2px solid #dadce0; 
+            padding-top: 10px; 
+            margin-top: 10px; 
+            flex-wrap: wrap; /* Saldo negativo se acomoda */
+        }
 
-        #analisis-texto { background: #fff; border-left: 5px solid var(--primary); padding: 15px; margin-top: 20px; font-style: italic; line-height: 1.6; }
+        #analisis-texto { 
+            background: #fff; 
+            border-left: 5px solid var(--primary); 
+            padding: 12px; 
+            margin-top: 15px; 
+            font-style: italic; 
+            line-height: 1.5; 
+            font-size: 0.9rem;
+        }
 
-        .btn-add { background: #e8f0fe; color: var(--primary); border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        .btn-download { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; width: 100%; margin-top: 20px; font-weight: bold; }
+        /* Botones grandes para Touch */
+        .btn-add { 
+            background: #e8f0fe; 
+            color: var(--primary); 
+            border: none; 
+            padding: 12px 15px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            width: 100%; /* Botón ancho completo en móvil */
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+        .btn-download { 
+            background: var(--primary); 
+            color: white; 
+            border: none; 
+            padding: 15px; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            width: 100%; 
+            margin-top: 20px; 
+            font-weight: bold; 
+            font-size: 1rem;
+        }
+
+        /* ----- MEDIA QUERIES PARA ESCRITORIO ----- */
+        @media (min-width: 600px) {
+            body { padding: 20px; }
+            .container { padding: 30px; }
+            h1 { font-size: 2rem; }
+            .grid { grid-template-columns: 1fr 1fr; } /* Volvemos a 2 columnas */
+            input { width: auto; flex: 1; } /* Inputs flexibles */
+            .row { flex-wrap: nowrap; }
+            .btn-add { width: auto; }
+            .gasto-row { display: flex; } /* Gasto fila normal en PC */
+        }
 
         @media print { .tabs, .btn-add, .btn-download { display: none !important; } }
     </style>
@@ -47,30 +208,30 @@
     <p style="text-align:center; color: var(--gray); margin-bottom: 20px;" id="current-date"></p>
 
     <div class="tabs">
-        <button class="tab-btn active" onclick="openTab(event, 'reporte')">Reporte General</button>
-        <button class="tab-btn" onclick="openTab(event, 'calculadora')">Pasajes y Nómina</button>
+        <button class="tab-btn active" onclick="openTab(event, 'reporte')">General</button>
+        <button class="tab-btn" onclick="openTab(event, 'calculadora')">Pasajes/Nómina</button>
     </div>
 
     <div id="reporte" class="tab-content active">
         <div class="grid">
-            <div class="col">
+            <div class="col card">
                 <h2>Ingresos Mensuales</h2>
                 <div class="row">
-                    <label style="width: 100px;">Salario:</label>
+                    <label style="font-weight:bold; color:var(--gray);">Salario:</label>
                     <input type="number" id="salario" value="0" oninput="calcularTodo()">
                 </div>
                 <div class="row">
-                    <label style="width: 100px;">Extras:</label>
+                    <label style="font-weight:bold; color:var(--gray);">Extras:</label>
                     <input type="number" id="otrosIngresos" value="0" oninput="calcularTodo()">
                 </div>
             </div>
 
-            <div class="col">
+            <div class="col card">
                 <h2>Gastos Variables</h2>
                 <div id="lista-gastos">
-                    <div class="row">
-                        <input type="text" value="Arriendo">
-                        <input type="number" class="gasto-valor" value="0" oninput="calcularTodo()">
+                    <div class="gasto-row">
+                        <input type="text" value="Arriendo" placeholder="Concepto">
+                        <input type="number" class="gasto-valor" value="0" oninput="calcularTodo()" placeholder="$">
                     </div>
                 </div>
                 <button class="btn-add" onclick="agregarFila()">+ Añadir Concepto</button>
@@ -82,28 +243,43 @@
         <div class="grid">
             <div class="col calc-box">
                 <h2>🚌 Cálculo de Pasajes</h2>
-                <span class="info-label">Valor del pasaje (un trayecto):</span>
-                <input type="number" id="valorPasaje" value="2950" oninput="calcularTodo()" style="width: 90%; margin-bottom: 15px;">
+                <div class="row">
+                    <div style="flex:1">
+                        <span class="info-label">Valor (trayecto):</span>
+                        <input type="number" id="valorPasaje" value="2950" oninput="calcularTodo()">
+                    </div>
+                </div>
+                <div class="row">
+                    <div style="flex:1">
+                        <span class="info-label">Pasajes/día:</span>
+                        <input type="number" id="cantidadPasajes" value="2" oninput="calcularTodo()">
+                    </div>
+                    <div style="flex:1">
+                        <span class="info-label">Días/mes:</span>
+                        <input type="number" id="diasLaborales" value="20" oninput="calcularTodo()">
+                    </div>
+                </div>
                 
-                <span class="info-label">Pasajes al día (ej: 2 o 4):</span>
-                <input type="number" id="cantidadPasajes" value="2" oninput="calcularTodo()" style="width: 90%; margin-bottom: 15px;">
-                
-                <span class="info-label">Días laborales al mes:</span>
-                <input type="number" id="diasLaborales" value="20" oninput="calcularTodo()" style="width: 90%;">
-                
-                <p style="margin-top: 15px; font-weight: bold; color: var(--primary);">Total Pasajes Mes: <span id="totalPasajesText">$0</span></p>
+                <p style="margin-top: 15px; font-weight: bold; color: var(--primary); text-align:center;">Total Pasajes Mes: <span id="totalPasajesText">$0</span></p>
             </div>
 
             <div class="col calc-box">
-                <h2>💰 Descuentos de Nómina</h2>
-                <span class="info-label">Ahorro automático (Nómina):</span>
-                <input type="number" id="ahorroNomina" value="0" oninput="calcularTodo()" style="width: 90%; margin-bottom: 15px;">
+                <h2>💰 Nómina (Descuentos)</h2>
+                <div class="row">
+                    <div style="flex:1">
+                        <span class="info-label">Ahorro automático:</span>
+                        <input type="number" id="ahorroNomina" value="0" oninput="calcularTodo()">
+                    </div>
+                </div>
+                <div class="row">
+                    <div style="flex:1">
+                        <span class="info-label">Otros descuentos:</span>
+                        <input type="number" id="descuentosNomina" value="0" oninput="calcularTodo()">
+                    </div>
+                </div>
                 
-                <span class="info-label">Otros descuentos (Deudas nómina):</span>
-                <input type="number" id="descuentosNomina" value="0" oninput="calcularTodo()" style="width: 90%;">
-                
-                <p style="margin-top: 15px; color: var(--gray); font-size: 0.85em;">
-                    * Estos valores se restan de tu ingreso base para un análisis más real de tu dinero disponible.
+                <p style="margin-top: 15px; color: var(--gray); font-size: 0.8em; text-align:center;">
+                    * Se restan para ver el disponible real.
                 </p>
             </div>
         </div>
@@ -111,17 +287,17 @@
 
     <div class="resumen-card">
         <div class="resumen-item"><span>Ingresos Totales:</span> <span id="res-ingresos">$0</span></div>
-        <div class="resumen-item"><span>Ahorro en Nómina (Protegido):</span> <span id="res-ahorro" style="color: var(--secondary); font-weight: bold;">$0</span></div>
-        <div class="resumen-item"><span>Total Gastos + Pasajes:</span> <span id="res-gastos">$0</span></div>
+        <div class="resumen-item"><span>Ahorro Nómina:</span> <span id="res-ahorro" style="color: var(--secondary); font-weight: bold;">$0</span></div>
+        <div class="resumen-item"><span>Gastos + Pasajes:</span> <span id="res-gastos">$0</span></div>
         <div class="resumen-item total-destacado"><span>Saldo Disponible:</span> <span id="res-saldo">$0</span></div>
         
         <div id="analisis-contenedor">
-            <h3>Análisis de tu IA:</h3>
+            <h3>Análisis IA:</h3>
             <div id="analisis-texto">Ingresa tus datos para conversar...</div>
         </div>
     </div>
 
-    <button class="btn-download" onclick="window.print()">Descargar Reporte Completo (PDF)</button>
+    <button class="btn-download" onclick="window.print()">Descargar Reporte (PDF)</button>
 </div>
 
 <script>
@@ -139,8 +315,8 @@
 
     function agregarFila() {
         const div = document.createElement('div');
-        div.className = 'row';
-        div.innerHTML = `<input type="text" placeholder="Concepto"><input type="number" class="gasto-valor" value="0" oninput="calcularTodo()">`;
+        div.className = 'gasto-row'; // Usamos gasto-row responsivo
+        div.innerHTML = `<input type="text" placeholder="Concepto"><input type="number" class="gasto-valor" value="0" oninput="calcularTodo()" placeholder="$">`;
         document.getElementById('lista-gastos').appendChild(div);
     }
 
@@ -190,20 +366,14 @@
         let msg = "";
 
         if (sal < 0) {
-            msg = "🚨 **Alerta Crítica:** Tus gastos (incluyendo pasajes y descuentos) superan tus ingresos. Estás en déficit por " + Math.abs(sal) + ". Revisa si puedes reducir días de oficina o gastos variables.";
+            msg = "🚨 **Alerta Crítica:** Tus gastos superan tus ingresos. Déficit por " + f.format(Math.abs(sal)) + ". Revisa gastos variables.";
         } else {
-            msg = "Hola. He procesado tu información. ";
-            if (aho > 0) {
-                msg += "Me parece excelente que ya tengas un **ahorro de nómina del " + pctAhorro.toFixed(1) + "%**. Ese dinero es 'invisible' pero te está construyendo futuro. ";
-            } else {
-                msg += "Veo que no tienes ahorros por nómina. Es una gran herramienta para ahorrar antes de ver el dinero. ";
-            }
+            msg = "Hola. ";
+            if (aho > 0) msg += "¡Excelente ese ahorro de nómina del " + pctAhorro.toFixed(1) + "%! ";
+            else msg += "Considera activar un ahorro por nómina. ";
 
-            if (sal > (ing * 0.15)) {
-                msg += "\n\n✅ Tienes un disponible sano del " + ((sal/ing)*100).toFixed(1) + "%. Es un buen momento para no gastarlo todo y quizás aumentar ese ahorro de nómina.";
-            } else {
-                msg += "\n\n⚠️ Estás operando con un margen estrecho. Después de pasajes y deudas, te queda muy poco disponible.";
-            }
+            if (sal > (ing * 0.15)) msg += "\n\n✅ Disponible sano del " + ((sal/ing)*100).toFixed(1) + "%.";
+            else msg += "\n\n⚠️ Operas con un margen estrecho.";
         }
         texto.innerText = msg;
     }
